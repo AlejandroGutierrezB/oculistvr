@@ -1,0 +1,17 @@
+[
+  {
+    "name": "locale",
+    "value": "en_US",
+    "domain": ".oculus.com",
+    "path": "/",
+    "expires": 1631964676.552384,
+    "size": 11,
+    "httpOnly": false,
+    "secure": true,
+    "session": false,
+    "sameSite": "None",
+    "sameParty": false,
+    "sourceScheme": "Secure",
+    "sourcePort": 443
+  }
+]
