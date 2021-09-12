@@ -13,7 +13,7 @@ const gameScraper = async (event, context) => {
     const browser = await puppeteer.launch({
       headless:
         process.env.NODE_ENV === 'headlees' ||
-        process.env.NODE_ENV === 'production '
+        process.env.NODE_ENV === 'production'
           ? true
           : false,
       args: [
