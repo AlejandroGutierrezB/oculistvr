@@ -3,40 +3,26 @@ const { Client, LogLevel } = require('@notionhq/client');
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
-const getDate = require('./getDate');
+const getGameList = require('../helpers/notionHelpers');
 
 const notion = new Client({
   auth: process.env.NOTION_KEY,
-  // logLevel: LogLevel.DEBUG, //!
 });
 const databaseId = process.env.NOTION_DB_ID;
 
-const getGameList = async () => {
-  try {
-    const gamesString = await fs.readFile(
-      path.resolve(__dirname, `../data/${getDate()}.json`)
-    );
-    const games = JSON.parse(gamesString);
-    const filteredGames = games.filter((game) => game.price !== null);
-    return filteredGames;
-  } catch (error) {
-    console.error('getGameList - error', error);
-  }
-};
-
-const getDb = async (dbId) => {
+const getDb = async (dbId = databaseId) => {
   try {
     const response = await notion.databases.retrieve({
       database_id: dbId,
     });
-    console.log('This is the db you wanted', response);
+    console.log('This is the db you retrieved', response);
     return response;
   } catch (error) {
     console.error('getDb - error', error.body);
   }
 };
 
-const queryDbPages = async (dbId) => {
+const queryDbPages = async (dbId = databaseId) => {
   const pageTitles = [];
   try {
     const response = await notion.databases.query({
@@ -53,13 +39,16 @@ const queryDbPages = async (dbId) => {
   }
 };
 
-const checkIfCreateOrUpdatePage = async (dbId) => {
+const checkIfCreateOrUpdatePage = async (
+  dbId = databaseId,
+  scrapedGameList
+) => {
   const pagesToCreate = [];
   const pagesToUpdate = [];
 
   try {
     const { pageTitles, queryResult: prevPagesData } = await queryDbPages(dbId);
-    const gameList = await getGameList();
+    const gameList = scrapedGameList || (await getGameList());
     if (gameList && pageTitles) {
       for (let game of gameList) {
         if (!pageTitles.includes(game.title)) {
@@ -78,14 +67,15 @@ const checkIfCreateOrUpdatePage = async (dbId) => {
         }
       }
     }
-
+    console.log('Nº of new pages to Create', pagesToCreate.length);
+    console.log('Nº of pages to Update', pagesToUpdate.length);
     return { pagesToCreate, pagesToUpdate };
   } catch (error) {
     console.error('checkIfCreateOrUpdatePage - error', error);
   }
 };
-//rows are pages so we have to either create or update a page for each game.
-const addPageToDb = async (game, dbId) => {
+
+const addPageToDb = async (game, dbId = databaseId) => {
   if (game.price === 'Free' || game.price === null) return;
 
   const captureDate = new Date().toISOString();
@@ -154,8 +144,7 @@ const addPageToDb = async (game, dbId) => {
   }
 };
 
-//batchAddPageToDb
-const batchAddPageToDb = async (pagesToCreate, dbId) => {
+const batchAddPageToDb = async (pagesToCreate, dbId = databaseId) => {
   if (pagesToCreate.length === 0) return;
   try {
     pagesToCreate.map(async (game) => {
@@ -165,11 +154,11 @@ const batchAddPageToDb = async (pagesToCreate, dbId) => {
     console.error('batchAddPageToDb -error ', error);
   }
 };
-//updatePageToDb
+
 const updatePageToDb = async (game) => {
   const updatedGame = game.prevData;
   if (game.newData.price < game.prevData['CurrentPrice'].number) {
-    //TODO sengrid notification
+    //TODO sengrid notification aslo if target price is reached
     if (game.prevData['LowestPrice'].number > game.newData.price) {
       updatedGame['LowestPrice'].number = game.newData.price;
       updatedGame['LowestPriceDate'].date.start = new Date().toISOString();
@@ -182,8 +171,12 @@ const updatePageToDb = async (game) => {
     }
   }
   updatedGame['CurrentPrice'].number = game.newData.price; //always update current price
-  //!make the call
-  console.log('🚀updatedGame', updatedGame['LowestPriceDate'].date);
+  //only upload relevant properties
+  for (const property in updatedGame) {
+    if (!property.match(/price/gi)) {
+      delete updatedGame[property];
+    }
+  }
 
   try {
     await notion.pages.update({
@@ -192,7 +185,7 @@ const updatePageToDb = async (game) => {
     });
     console.log(`Success! ${game.newData.title} updated.`);
   } catch (error) {
-    console.error('updatePageToDb - error', error);
+    // console.error('updatePageToDb - error', error);
   }
 };
 
@@ -207,17 +200,28 @@ const batchUpdatePageToDb = async (pagesToUpdate) => {
   }
 };
 
-const batchUpdateNotionDb = async (dbId = databaseId) => {
+const batchUpdateNotionDb = async (scrapedGameList, dbId = databaseId) => {
   try {
     const { pagesToCreate, pagesToUpdate } = await checkIfCreateOrUpdatePage(
-      dbId
+      dbId,
+      scrapedGameList
     );
 
     await batchAddPageToDb(pagesToCreate, dbId);
     await batchUpdatePageToDb(pagesToUpdate);
   } catch (error) {
     console.error('batchUpdateNotionDb - error', error);
+    throw error;
   }
 };
 
-module.exports = batchUpdateNotionDb;
+module.exports = {
+  getDb,
+  queryDbPages,
+  checkIfCreateOrUpdatePage,
+  addPageToDb,
+  batchAddPageToDb,
+  updatePageToDb,
+  batchUpdatePageToDb,
+  batchUpdateNotionDb,
+};
