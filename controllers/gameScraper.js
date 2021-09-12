@@ -45,7 +45,8 @@ const gameScraper = async (event, context) => {
 
         const priceWithoutCurrency = price.split(' ')[0];
         const priceWithDot = priceWithoutCurrency.replace(',', '.');
-        price = price === null ? 0 : parseFloat(priceWithDot);
+        price = parseFloat(priceWithDot);
+        // price = price === null ? 0 : parseFloat(priceWithDot);
 
         const finalHref = game.innerHTML.match(/href="(.*?)"/)[1];
 
