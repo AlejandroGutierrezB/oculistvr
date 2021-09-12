@@ -11,8 +11,16 @@ const gameScraper = async (event, context) => {
   console.log('Scraping with puppeteer started...');
   try {
     const browser = await puppeteer.launch({
-      headless: false, //!
-      args: ['--window-size=1920,1080'],
+      headless:
+        process.env.NODE_ENV === 'headlees' ||
+        process.env.NODE_ENV === 'production '
+          ? true
+          : false,
+      args: [
+        '--window-size=1920,1080',
+        `--no-sandbox`,
+        `--disable-setuid-sandbox`,
+      ],
     });
 
     const page = await browser.newPage();

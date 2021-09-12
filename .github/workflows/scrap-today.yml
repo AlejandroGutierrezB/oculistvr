@@ -25,4 +25,5 @@ jobs:
           git config user.email alejandrogutbarce@gmail.com
           git add .
           git commit -m "Add prices for today"
+          git push --set-upstream origin master
           git push
