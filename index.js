@@ -3,20 +3,17 @@ const fs = require('fs').promises;
 require('dotenv').config();
 
 const getDate = require('./helpers/getDate');
+const batchUpdateNotionDb = require('./helpers/notion');
 
 (async (event, context) => {
   const browser = await puppeteer.launch({
-    headless: false, //!
-    args: [
-      '--window-size=1920,1080',
-      // "--no-sandbox",
-      // "--disable-setuid-sandbox"
-    ],
+    headless: true,
+    args: ['--window-size=1920,1080'],
   });
 
   const page = await browser.newPage();
   await page.goto(
-    'https://www.oculus.com/experiences/quest/section/554169918379884' // most popular games
+    'https://www.oculus.com/experiences/quest/section/274907549851488' // top paid games
   );
 
   // wait for cookie button to appear
@@ -28,7 +25,7 @@ const getDate = require('./helpers/getDate');
   }
 
   // we need autoscroll to load all elements
-  // await autoScroll(page);
+  await autoScroll(page);
   const results = await page.$$eval('.section__items-cell', (games) => {
     return games.map((game) => {
       let [title, price] = game.innerText.split('\n');
@@ -55,32 +52,33 @@ const getDate = require('./helpers/getDate');
       };
     });
   });
-  console.log('🚀 ~ file: index.js ~ line 48 ~ results ~ results', results);
+  console.log('Games scraped and saved to json', results); //!
   await fs.writeFile(
     `./data/${getDate()}.json`,
     JSON.stringify(results, null, 2)
   );
+  await browser.close();
 
-  //grid
-  // '/html/body/div/div[1]/div[3]/div[3]/div/div[2]/div/div/div[2]'
-  //class="section__items-cell"-->class="store-section-item"
-  //<a href=`/experiences/quest/${id}` url>"
-  //class="store-section-item__meta"-->class="store-section-item__meta-name"
-  //nested divs until span-->span
-
-  // await browser.close();
+  if (results && results.length > 0) {
+    try {
+      console.log('Updating notion');
+      await batchUpdateNotionDb();
+      console.log('Notion succesfully updated');
+    } catch (error) {
+      console.error(error);
+    }
+  }
 })();
 
 const autoScroll = async (page) => {
   await page.evaluate(async () => {
     await new Promise((resolve, reject) => {
-      const totalHeight = 0;
+      let totalHeight = 0;
       const distance = 100;
       const timer = setInterval(() => {
         const scrollHeight = document.body.scrollHeight;
         window.scrollBy(0, distance);
         totalHeight += distance;
-
         if (totalHeight >= scrollHeight) {
           clearInterval(timer);
           resolve();

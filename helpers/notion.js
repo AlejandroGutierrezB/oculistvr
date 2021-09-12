@@ -7,13 +7,15 @@ const getDate = require('./getDate');
 
 const notion = new Client({
   auth: process.env.NOTION_KEY,
-  logLevel: LogLevel.DEBUG, //!
+  // logLevel: LogLevel.DEBUG, //!
 });
 const databaseId = process.env.NOTION_DB_ID;
 
 const getGameList = async () => {
   try {
-    const gamesString = await fs.readFile(`../data/${getDate()}.json`);
+    const gamesString = await fs.readFile(
+      path.resolve(__dirname, `../data/${getDate()}.json`)
+    );
     const games = JSON.parse(gamesString);
     const filteredGames = games.filter((game) => game.price !== null);
     return filteredGames;
@@ -205,7 +207,7 @@ const batchUpdatePageToDb = async (pagesToUpdate) => {
   }
 };
 
-const batchUpdateNotionDb = async (dbId) => {
+const batchUpdateNotionDb = async (dbId = databaseId) => {
   try {
     const { pagesToCreate, pagesToUpdate } = await checkIfCreateOrUpdatePage(
       dbId
@@ -218,4 +220,4 @@ const batchUpdateNotionDb = async (dbId) => {
   }
 };
 
-batchUpdateNotionDb(databaseId);
+module.exports = batchUpdateNotionDb;
