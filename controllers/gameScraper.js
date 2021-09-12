@@ -7,15 +7,16 @@ const getDate = require('../helpers/getDate');
 const autoScroll = require('../helpers/autoScroll');
 const { URL_TOP_PAID_GAMES } = require('../helpers/constants');
 
+const isHeadless =
+  process.env.NODE_ENV === 'headless' || process.env.NODE_ENV === 'production'
+    ? true
+    : false;
+
 const gameScraper = async (event, context) => {
   console.log('Scraping with puppeteer started...');
   try {
     const browser = await puppeteer.launch({
-      headless:
-        process.env.NODE_ENV === 'headless' ||
-        process.env.NODE_ENV === 'production'
-          ? true
-          : false,
+      headless: isHeadless,
       args: [
         '--window-size=1920,1080',
         `--no-sandbox`,
@@ -39,33 +40,38 @@ const gameScraper = async (event, context) => {
     // we need autoscroll to load all elements
     await autoScroll(page);
     //scrape and normalize data
-    const results = await page.$$eval('.section__items-cell', (games) => {
-      return games.map((game) => {
-        let [title, price] = game.innerText.split('\n');
+    const results = await page.$$eval(
+      '.section__items-cell',
+      (games) => {
+        return games.map((game) => {
+          let [title, price] = game.innerText.split('\n');
+          const normalizedPrice = price
+            .replace(/[€$]+/g, '')
+            .replace(',', '.')
+            .trim();
+          const parsedPrice = Number(
+            Math.round(parseFloat(normalizedPrice + 'e2')) + 'e-2'
+          );
 
-        const priceWithoutCurrency = price.split(' ')[0];
-        const priceWithDot = priceWithoutCurrency.replace(',', '.');
-        price = parseFloat(priceWithDot);
-        // price = price === null ? 0 : parseFloat(priceWithDot);
+          const finalHref = game.innerHTML.match(/href="(.*?)"/)[1];
+          const [trash, ...baseImageUrl] = game.innerHTML
+            .match(/style="(.*?)"/)[1]
+            .split(';');
+          const imageUrl = baseImageUrl
+            .join('')
+            .replace(/amp/g, '')
+            .split('&quot')[0];
 
-        const finalHref = game.innerHTML.match(/href="(.*?)"/)[1];
-
-        const [trash, ...baseImageUrl] = game.innerHTML
-          .match(/style="(.*?)"/)[1]
-          .split(';');
-        const imageUrl = baseImageUrl
-          .join('')
-          .replace(/amp/g, '')
-          .split('&quot')[0];
-
-        return {
-          title,
-          price,
-          href: `https://www.oculus.com${finalHref}`,
-          image: imageUrl,
-        };
-      });
-    });
+          return {
+            title,
+            price: parsedPrice,
+            href: `https://www.oculus.com${finalHref}`,
+            image: imageUrl,
+          };
+        });
+      },
+      isHeadless
+    );
 
     console.log('Games scraped and saved to json');
 
