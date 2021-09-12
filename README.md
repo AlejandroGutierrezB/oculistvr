@@ -46,10 +46,10 @@ Here is what you need to be able to run it.
 <!-- Roadmap -->
 ### To-do's
 
-[ ] Add github action to run everyday.
-[ ] Add sendgrid to receive notifications.
-[ ] If I keep adding features adding Typescript is a must
-[ ] Wrtie an article on how it was done
+- [ ] Add github action to run everyday.
+- [ ] Add sendgrid to receive notifications.
+- [ ] Wrtie an article on how it was done
+- [ ] If I keep adding features adding Typescript is a must
 
 <!-- CONTRIBUTING -->
 ## Contributing
