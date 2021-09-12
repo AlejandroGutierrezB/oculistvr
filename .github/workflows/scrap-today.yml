@@ -16,10 +16,10 @@ jobs:
         with:
           node-version: 14.x
       - run: npm install
+      - run: npm start
         env:
           NOTION_DB_ID: ${{ secrets.NOTION_DB_ID }}
           NOTION_KEY: ${{ secrets.NOTION_KEY }}
-      - run: npm start
       - run: |
           git config user.name AlejandroGutierrezB
           git config user.email alejandrogutbarce@gmail.com
