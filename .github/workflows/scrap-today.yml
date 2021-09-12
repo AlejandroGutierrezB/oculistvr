@@ -16,7 +16,7 @@ jobs:
         with:
           node-version: 14.x
       - run: npm install
-      - env:
+        env:
           NOTION_DB_ID: ${{ secrets.NOTION_DB_ID }}
           NOTION_KEY: ${{ secrets.NOTION_KEY }}
       - run: npm start
