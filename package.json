@@ -22,6 +22,7 @@
   "dependencies": {
     "@notionhq/client": "^0.3.2",
     "dotenv": "^10.0.0",
+    "node-telegram-bot-api": "^0.54.0",
     "puppeteer": "^10.2.0"
   },
   "devDependencies": {
