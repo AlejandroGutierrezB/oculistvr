@@ -16,6 +16,7 @@ jobs:
         with:
           node-version: 14.x
       - run: npm install
+      - run: mkdir -p ./screenshots
       - run: npm start
         env:
           NOTION_DB_ID: ${{ secrets.NOTION_DB_ID }}
@@ -29,7 +30,6 @@ jobs:
           git commit -m "Add prices for today"
           git push --set-upstream origin master
           git push
-      - run: mkdir -p ./screenshots
       - name: Archive code coverage results
         uses: actions/upload-artifact@v2
         with:

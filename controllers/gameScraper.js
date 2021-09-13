@@ -7,8 +7,8 @@ const getDate = require('../helpers/getDate');
 const autoScroll = require('../helpers/autoScroll');
 const { URL_TOP_PAID_GAMES } = require('../helpers/constants');
 
-const isHeadless = true;
-// process.env.NODE_ENV === 'headless' || process.env.NODE_ENV === 'production';
+const isHeadless =
+  process.env.NODE_ENV === 'headless' || process.env.NODE_ENV === 'production';
 
 const gameScraper = async (event, context) => {
   console.log('~ file: gameScraper.js ~ line 11 ~ isHeadless', isHeadless);
