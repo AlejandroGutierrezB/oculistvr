@@ -8,11 +8,10 @@ const autoScroll = require('../helpers/autoScroll');
 const { URL_TOP_PAID_GAMES } = require('../helpers/constants');
 
 const isHeadless =
-  process.env.NODE_ENV === 'headless' || process.env.NODE_ENV === 'production'
-    ? true
-    : false;
+  process.env.NODE_ENV === 'headless' || process.env.NODE_ENV === 'production';
 
 const gameScraper = async (event, context) => {
+  console.log('~ file: gameScraper.js ~ line 11 ~ isHeadless', isHeadless);
   console.log('Scraping with puppeteer started...');
   try {
     const browser = await puppeteer.launch({
