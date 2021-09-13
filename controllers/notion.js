@@ -159,9 +159,7 @@ const addPageToDb = async (game, dbId = databaseId) => {
 const batchAddPageToDb = async (pagesToCreate, dbId = databaseId) => {
   if (pagesToCreate.length === 0) return;
   try {
-    pagesToCreate.map(async (game) => {
-      await addPageToDb(game, dbId);
-    });
+    pagesToCreate.map(async (game) => await addPageToDb(game, dbId));
   } catch (error) {
     console.error('batchAddPageToDb -error ', error);
   }
@@ -203,9 +201,7 @@ const updatePageToDb = async (game) => {
 const batchUpdatePageToDb = async (pagesToUpdate) => {
   if (pagesToUpdate.length === 0) return;
   try {
-    pagesToUpdate.map(async (game) => {
-      await updatePageToDb(game);
-    });
+    pagesToUpdate.map(async (game) => await updatePageToDb(game));
   } catch (error) {
     console.error('batchUpdatePageToDb - error', error);
   }
@@ -218,7 +214,7 @@ const batchUpdateNotionDb = async (scrapedGameList, dbId = databaseId) => {
 
     await batchAddPageToDb(pagesToCreate, dbId);
     await batchUpdatePageToDb(pagesToUpdate);
-    notificationsOn && notifyUpdateTelegram(gamesToNotify);
+    notificationsOn && (await notifyUpdateTelegram(gamesToNotify));
   } catch (error) {
     console.error('batchUpdateNotionDb - error', error);
     throw error;

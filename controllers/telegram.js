@@ -21,12 +21,12 @@ const getUserTelegramId = () => {
   });
 };
 
-const notifyUpdateTelegram = (payload) => {
+const notifyUpdateTelegram = async (payload) => {
   if (payload.length === 0) return;
   const message = transformListToMarkDown(payload);
 
   try {
-    bot.sendMessage(chatId, message, {
+    await bot.sendMessage(chatId, message, {
       parse_mode: 'Markdown',
     });
     console.log('Notification sended via Telegram');
@@ -35,6 +35,7 @@ const notifyUpdateTelegram = (payload) => {
       'Something went wrong when trying to send a Telegram notification',
       err
     );
+    throw error;
   }
 };
 

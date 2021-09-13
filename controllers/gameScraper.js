@@ -9,6 +9,7 @@ const { URL_TOP_PAID_GAMES } = require('../helpers/constants');
 
 const isHeadless =
   process.env.NODE_ENV === 'headless' || process.env.NODE_ENV === 'production';
+const isDebug = process.env.NODE_ENV !== 'production';
 
 const gameScraper = async (event, context) => {
   console.log('Scraping with puppeteer started...');
@@ -25,11 +26,12 @@ const gameScraper = async (event, context) => {
     });
 
     page = await browser.newPage();
-    page.on('console', (message) =>
-      console.log(
-        `${message.type().substr(0, 3).toUpperCase()} ${message.text()}`
-      )
-    );
+    isDebug &&
+      page.on('console', (message) =>
+        console.log(
+          `${message.type().substr(0, 3).toUpperCase()} ${message.text()}`
+        )
+      );
 
     await page.goto(URL_TOP_PAID_GAMES);
 
@@ -58,20 +60,7 @@ const gameScraper = async (event, context) => {
               : hasDiscount && !isHeadless
               ? price.split(/[€$]/)[0].split('%')[1] //discounted price "-29%24.62€34.98€",
               : price;
-          //discounted price github"",
-
-          console.log(
-            `🚀 ~ file: gameScraper.js ~ line 61 ~ returngames.map ~ ${title} price`,
-            price
-          );
-          console.log(
-            `🚀 ~ file: gameScraper.js ~ line 61 ~ returngames.map ~ ${title} cleanPriceWhenDiscounted`,
-            cleanPriceWhenDiscounted
-          );
-          console.log(
-            `🚀 ~ file: gameScraper.js ~ line 61 ~ returngames.map ~ ${title} cleanPriceWhenDiscounted.replace`,
-            cleanPriceWhenDiscounted.replace(/[€$]+/g, '')
-          );
+          //discounted price github"-17%$28.99$34.98",
           const normalizedPrice = cleanPriceWhenDiscounted
             .replace(/[€$]+/g, '')
             .replace(',', '.')
