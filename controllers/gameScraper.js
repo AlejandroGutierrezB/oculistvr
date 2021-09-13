@@ -11,7 +11,6 @@ const isHeadless =
   process.env.NODE_ENV === 'headless' || process.env.NODE_ENV === 'production';
 
 const gameScraper = async (event, context) => {
-  console.log('~ file: gameScraper.js ~ line 11 ~ isHeadless', isHeadless);
   console.log('Scraping with puppeteer started...');
   let page;
   let browser;
@@ -26,6 +25,12 @@ const gameScraper = async (event, context) => {
     });
 
     page = await browser.newPage();
+    page.on('console', (message) =>
+      console.log(
+        `${message.type().substr(0, 3).toUpperCase()} ${message.text()}`
+      )
+    );
+
     await page.goto(URL_TOP_PAID_GAMES);
 
     // wait for cookie button to appear
@@ -54,6 +59,14 @@ const gameScraper = async (event, context) => {
               ? price.split('€')[0].split('%')[1] //"-29%24.62€34.98€"",
               : price;
 
+          console.log(
+            '🚀 ~ file: gameScraper.js ~ line 61 ~ returngames.map ~ cleanPriceWhenDiscounted',
+            cleanPriceWhenDiscounted
+          );
+          console.log(
+            '🚀 ~ file: gameScraper.js ~ line 61 ~ returngames.map ~ cleanPriceWhenDiscounted.replace',
+            cleanPriceWhenDiscounted.replace(/[€$]+/g, '')
+          );
           const normalizedPrice = cleanPriceWhenDiscounted
             .replace(/[€$]+/g, '')
             .replace(',', '.')
