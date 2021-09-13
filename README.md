@@ -2,7 +2,7 @@
 
 This project uses `github actions` as a crone job task runner, to scrape the list of most popular paid games for [OculustVR](https://www.oculus.com/experiences/quest/section/274907549851488/#/?_k=d97dn6) headset. Using **Notion** as both the `db` and the `frontend` to track game prices.
 You can have a look to the list [here](https://www.notion.so/1ffc01f1b8b54c79ac3714bca536e63e)
-They idea is to provoque exploration and try new things but if oyu want to improve the project or use it youself see instructions below.
+The idea behind this project is explore and learn, so I hope it provoques people willingness of exploration and try new things, but if you want to improve the project or use it youself see instructions below.
 
 <!-- GETTING STARTED -->
 
@@ -18,7 +18,7 @@ Here is what you need to be able to run it.
 - NPM
 - [Notion developer key](https://developers.notion.com/docs/getting-started).
 - [Notion db to use](https://stackoverflow.com/questions/67728038/where-to-find-database-id-for-my-database-in-notion).
-- [Sendgrid](https://docs.sendgrid.com/ui/account-and-settings/api-keys) if you want notifications.
+- [Telegram](https://core.telegram.org/bots) if you want notifications.
 
 ### Development Setup
 
@@ -44,15 +44,14 @@ Here is what you need to be able to run it.
 - [Node.js](https://nodejs.org/)
 - [Notion](https://www.notion.so/)
 - [Github Actions](https://github.com/features/actions)
-- [Sendgrid](https://sendgrid.com/) (soon...)
+- [Telegram](https://telegram.org/)
 
 <!-- Roadmap -->
 
 ### To-do's
 
 - [x] Add github action to run everyday.
-- [ ] Add sendgrid to receive notifications.
-- [ ] Write an article on how it was done
+- [x] Add telegram to receive notifications.
 - [ ] If I keep adding features adding Typescript is a must
 
 <!-- CONTRIBUTING -->
