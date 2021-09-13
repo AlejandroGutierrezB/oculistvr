@@ -74,6 +74,8 @@ const checkIfCreateOrUpdatePage = async (
           prevData.properties['TargetPrice'].number >= game.price &&
             gamesToNotify.push(game);
         }
+        //Always add discounted games to notification list
+        game.hasDiscount && gamesToNotify.push(game);
       }
     }
     console.log('Nº of new pages to Create', pagesToCreate.length);
@@ -90,7 +92,7 @@ const addPageToDb = async (game, dbId = databaseId) => {
 
   const captureDate = new Date().toISOString();
   try {
-    await notion.pages.create({
+    const res = await notion.pages.create({
       parent: { database_id: dbId },
       cover: {
         type: 'external',
@@ -148,7 +150,7 @@ const addPageToDb = async (game, dbId = databaseId) => {
         },
       ],
     });
-    console.log('Success! Entry added.');
+    console.log(`Success! ${game.title} added.`);
   } catch (error) {
     console.error('addPageToDb - error', error);
   }
@@ -216,7 +218,7 @@ const batchUpdateNotionDb = async (scrapedGameList, dbId = databaseId) => {
 
     await batchAddPageToDb(pagesToCreate, dbId);
     await batchUpdatePageToDb(pagesToUpdate);
-    notificationsOn && (await notifyUpdateTelegram('test', gamesToNotify));
+    notificationsOn && (await notifyUpdateTelegram(gamesToNotify));
   } catch (error) {
     console.error('batchUpdateNotionDb - error', error);
     throw error;

@@ -9,7 +9,6 @@ const { batchUpdateNotionDb } = require('./controllers/notion');
       await batchUpdateNotionDb(results, undefined);
       console.log('Notion succesfully updated');
     }
-    process.exit(0);
   } catch (error) {
     console.error(error);
     process.exit(1);

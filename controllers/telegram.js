@@ -2,6 +2,8 @@ const TelegramBot = require('node-telegram-bot-api');
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
+const { transformListToMarkDown } = require('../helpers/telegramHelpers');
+
 const token = process.env.TELEGRAM_TOKEN;
 const chatId = process.env.TELEGRAM_CHAT_ID; //use getChatId() to get chat id first time
 
@@ -19,25 +21,14 @@ const getUserTelegramId = () => {
   });
 };
 
-const notifyUpdateTelegram = (message, payload) => {
+const notifyUpdateTelegram = (payload) => {
   if (payload.length === 0) return;
+  const message = transformListToMarkDown(payload);
 
-  const normalizedPayload = payload.map((game) => {
-    return { title: game.title, price: game.price, link: game.href };
-  });
   try {
-    bot.sendMessage(
-      chatId,
-      `The following game${
-        normalizedPayload.length > 0 && 's'
-      } reached the target price` +
-        '\n\n<pre>' +
-        JSON.stringify(normalizedPayload, null, 2) +
-        '</pre>',
-      {
-        parse_mode: 'html',
-      }
-    );
+    bot.sendMessage(chatId, message, {
+      parse_mode: 'Markdown',
+    });
     console.log('Notification sended via Telegram');
   } catch (err) {
     console.log(
