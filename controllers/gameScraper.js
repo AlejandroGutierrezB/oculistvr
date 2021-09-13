@@ -7,14 +7,16 @@ const getDate = require('../helpers/getDate');
 const autoScroll = require('../helpers/autoScroll');
 const { URL_TOP_PAID_GAMES } = require('../helpers/constants');
 
-const isHeadless =
-  process.env.NODE_ENV === 'headless' || process.env.NODE_ENV === 'production';
+const isHeadless = true;
+// process.env.NODE_ENV === 'headless' || process.env.NODE_ENV === 'production';
 
 const gameScraper = async (event, context) => {
   console.log('~ file: gameScraper.js ~ line 11 ~ isHeadless', isHeadless);
   console.log('Scraping with puppeteer started...');
+  let page;
+  let browser;
   try {
-    const browser = await puppeteer.launch({
+    browser = await puppeteer.launch({
       headless: isHeadless,
       args: [
         '--window-size=1920,1080',
@@ -23,7 +25,7 @@ const gameScraper = async (event, context) => {
       ],
     });
 
-    const page = await browser.newPage();
+    page = await browser.newPage();
     await page.goto(URL_TOP_PAID_GAMES);
 
     // wait for cookie button to appear
@@ -88,12 +90,17 @@ const gameScraper = async (event, context) => {
     );
     console.log('Games scraped and saved to json');
 
-    await browser.close();
-    console.log('Scrapping finished and puppeteer closed');
     return results;
   } catch (error) {
     console.error('gameScraper error', error);
     throw error;
+  } finally {
+    page &&
+      (await page.screenshot({
+        path: path.resolve(__dirname, `../screenshots/${getDate()}.png`),
+      }));
+    browser && (await browser.close());
+    console.log('Scrapping finished and puppeteer closed');
   }
 };
 
