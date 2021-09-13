@@ -218,7 +218,7 @@ const batchUpdateNotionDb = async (scrapedGameList, dbId = databaseId) => {
 
     await batchAddPageToDb(pagesToCreate, dbId);
     await batchUpdatePageToDb(pagesToUpdate);
-    notificationsOn && (await notifyUpdateTelegram(gamesToNotify));
+    notificationsOn && notifyUpdateTelegram(gamesToNotify);
   } catch (error) {
     console.error('batchUpdateNotionDb - error', error);
     throw error;

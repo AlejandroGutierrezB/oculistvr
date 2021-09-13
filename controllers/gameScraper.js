@@ -54,17 +54,22 @@ const gameScraper = async (event, context) => {
           const hasDiscount = price.includes('%');
           const cleanPriceWhenDiscounted =
             hasDiscount && isHeadless
-              ? price.split(/[€$]/)[1] //"-29%€24.62€34.98" --> "€24.62€34.98",
+              ? price.split(/[€$]/)[1] //discounted price headless"-29%€24.62€34.98",
               : hasDiscount && !isHeadless
-              ? price.split(/[€$]/)[0].split('%')[1] //"-29%24.62€34.98€"",
+              ? price.split(/[€$]/)[0].split('%')[1] //discounted price "-29%24.62€34.98€",
               : price;
+          //discounted price github"",
 
           console.log(
-            '🚀 ~ file: gameScraper.js ~ line 61 ~ returngames.map ~ cleanPriceWhenDiscounted',
+            `🚀 ~ file: gameScraper.js ~ line 61 ~ returngames.map ~ ${title} price`,
+            price
+          );
+          console.log(
+            `🚀 ~ file: gameScraper.js ~ line 61 ~ returngames.map ~ ${title} cleanPriceWhenDiscounted`,
             cleanPriceWhenDiscounted
           );
           console.log(
-            '🚀 ~ file: gameScraper.js ~ line 61 ~ returngames.map ~ cleanPriceWhenDiscounted.replace',
+            `🚀 ~ file: gameScraper.js ~ line 61 ~ returngames.map ~ ${title} cleanPriceWhenDiscounted.replace`,
             cleanPriceWhenDiscounted.replace(/[€$]+/g, '')
           );
           const normalizedPrice = cleanPriceWhenDiscounted
