@@ -4,6 +4,10 @@ const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
 const getGameList = require('../helpers/notionHelpers');
+const { notifyUpdateTelegram } = require('./telegram');
+
+const notificationsOn =
+  process.env.TELEGRAM_TOKEN && process.env.TELEGRAM_CHAT_ID;
 
 const notion = new Client({
   auth: process.env.NOTION_KEY,
@@ -45,6 +49,7 @@ const checkIfCreateOrUpdatePage = async (
 ) => {
   const pagesToCreate = [];
   const pagesToUpdate = [];
+  const gamesToNotify = [];
 
   try {
     const { pageTitles, queryResult: prevPagesData } = await queryDbPages(dbId);
@@ -57,6 +62,7 @@ const checkIfCreateOrUpdatePage = async (
           const prevData = prevPagesData.find(
             (page) => game.title === page.properties.Title.title[0].plain_text
           );
+
           prevData.properties['CurrentPrice'].number !== game.price &&
             pagesToUpdate.push({
               title: game.title,
@@ -64,12 +70,18 @@ const checkIfCreateOrUpdatePage = async (
               newData: game,
               prevData: prevData.properties,
             });
+          //add game to notification list
+          prevData.properties['TargetPrice'].number >= game.price &&
+            gamesToNotify.push(game);
         }
+        //Always add discounted games to notification list
+        game.hasDiscount && gamesToNotify.push(game);
       }
     }
     console.log('Nº of new pages to Create', pagesToCreate.length);
     console.log('Nº of pages to Update', pagesToUpdate.length);
-    return { pagesToCreate, pagesToUpdate };
+    console.log('Nº of games to Notify', gamesToNotify.length);
+    return { pagesToCreate, pagesToUpdate, gamesToNotify };
   } catch (error) {
     console.error('checkIfCreateOrUpdatePage - error', error);
   }
@@ -80,7 +92,7 @@ const addPageToDb = async (game, dbId = databaseId) => {
 
   const captureDate = new Date().toISOString();
   try {
-    await notion.pages.create({
+    const res = await notion.pages.create({
       parent: { database_id: dbId },
       cover: {
         type: 'external',
@@ -138,7 +150,7 @@ const addPageToDb = async (game, dbId = databaseId) => {
         },
       ],
     });
-    console.log('Success! Entry added.');
+    console.log(`Success! ${game.title} added.`);
   } catch (error) {
     console.error('addPageToDb - error', error);
   }
@@ -158,7 +170,6 @@ const batchAddPageToDb = async (pagesToCreate, dbId = databaseId) => {
 const updatePageToDb = async (game) => {
   const updatedGame = game.prevData;
   if (game.newData.price < game.prevData['CurrentPrice'].number) {
-    //TODO sengrid notification aslo if target price is reached
     if (game.prevData['LowestPrice'].number > game.newData.price) {
       updatedGame['LowestPrice'].number = game.newData.price;
       updatedGame['LowestPriceDate'].date.start = new Date().toISOString();
@@ -185,7 +196,7 @@ const updatePageToDb = async (game) => {
     });
     console.log(`Success! ${game.newData.title} updated.`);
   } catch (error) {
-    // console.error('updatePageToDb - error', error);
+    console.error('updatePageToDb - error', error);
   }
 };
 
@@ -202,13 +213,12 @@ const batchUpdatePageToDb = async (pagesToUpdate) => {
 
 const batchUpdateNotionDb = async (scrapedGameList, dbId = databaseId) => {
   try {
-    const { pagesToCreate, pagesToUpdate } = await checkIfCreateOrUpdatePage(
-      dbId,
-      scrapedGameList
-    );
+    const { pagesToCreate, pagesToUpdate, gamesToNotify } =
+      await checkIfCreateOrUpdatePage(dbId, scrapedGameList);
 
     await batchAddPageToDb(pagesToCreate, dbId);
     await batchUpdatePageToDb(pagesToUpdate);
+    notificationsOn && (await notifyUpdateTelegram(gamesToNotify));
   } catch (error) {
     console.error('batchUpdateNotionDb - error', error);
     throw error;

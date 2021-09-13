@@ -43,9 +43,17 @@ const gameScraper = async (event, context) => {
     const results = await page.$$eval(
       '.section__items-cell',
       (games) => {
-        return games.map((game) => {
+        return games.map((game, isHeadless) => {
           let [title, price] = game.innerText.split('\n');
-          const normalizedPrice = price
+          const hasDiscount = price.includes('%');
+          const cleanPriceWhenDiscounted =
+            hasDiscount && isHeadless
+              ? price.split('€')[1] //"-29%€24.62€34.98" --> "€24.62€34.98",
+              : hasDiscount && !isHeadless
+              ? price.split('€')[0].split('%')[1] //"-29%24.62€34.98€"",
+              : price;
+
+          const normalizedPrice = cleanPriceWhenDiscounted
             .replace(/[€$]+/g, '')
             .replace(',', '.')
             .trim();
@@ -67,6 +75,8 @@ const gameScraper = async (event, context) => {
             price: parsedPrice,
             href: `https://www.oculus.com${finalHref}`,
             image: imageUrl,
+            hasDiscount,
+            discount: hasDiscount && price.split('%')[0].trim() + '%',
           };
         });
       },
