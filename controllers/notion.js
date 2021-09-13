@@ -92,7 +92,7 @@ const addPageToDb = async (game, dbId = databaseId) => {
 
   const captureDate = new Date().toISOString();
   try {
-    const res = await notion.pages.create({
+    await notion.pages.create({
       parent: { database_id: dbId },
       cover: {
         type: 'external',

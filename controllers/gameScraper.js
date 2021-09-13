@@ -83,12 +83,11 @@ const gameScraper = async (event, context) => {
       isHeadless
     );
 
-    console.log('Games scraped and saved to json');
-
     await fs.writeFile(
       path.resolve(__dirname, `../data/${getDate()}.json`),
       JSON.stringify(results, null, 2)
     );
+    console.log('Games scraped and saved to json');
 
     await browser.close();
     console.log('Scrapping finished and puppeteer closed');
