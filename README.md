@@ -18,7 +18,7 @@ Here is what you need to be able to run it.
 - NPM
 - [Notion developer key](https://developers.notion.com/docs/getting-started).
 - [Notion db to use](https://stackoverflow.com/questions/67728038/where-to-find-database-id-for-my-database-in-notion).
-- [Sendgrid](https://docs.sendgrid.com/ui/account-and-settings/api-keys) if you want notifications.
+- [Telegram](https://core.telegram.org/bots/api) if you want notifications.
 
 ### Development Setup
 
@@ -44,15 +44,14 @@ Here is what you need to be able to run it.
 - [Node.js](https://nodejs.org/)
 - [Notion](https://www.notion.so/)
 - [Github Actions](https://github.com/features/actions)
-- [Sendgrid](https://sendgrid.com/) (soon...)
+- [Telegram](https://core.telegram.org/bots/api)
 
 <!-- Roadmap -->
 
 ### To-do's
 
 - [x] Add github action to run everyday.
-- [ ] Add sendgrid to receive notifications.
-- [ ] Write an article on how it was done
+- [x] Add sendgrid to receive notifications.
 - [ ] If I keep adding features adding Typescript is a must
 
 <!-- CONTRIBUTING -->
