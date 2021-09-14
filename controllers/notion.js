@@ -167,19 +167,24 @@ const batchAddPageToDb = async (pagesToCreate, dbId = databaseId) => {
 
 const updatePageToDb = async (game) => {
   const updatedGame = game.prevData;
-  if (game.newData.price < game.prevData['CurrentPrice'].number) {
-    if (game.prevData['LowestPrice'].number > game.newData.price) {
-      updatedGame['LowestPrice'].number = game.newData.price;
-      updatedGame['LowestPriceDate'].date.start = new Date().toISOString();
-    }
+  //new lowest price
+  if (
+    game.newData.price < game.prevData['CurrentPrice'].number &&
+    game.prevData['LowestPrice'].number > game.newData.price
+  ) {
+    updatedGame['LowestPrice'].number = game.newData.price;
+    updatedGame['LowestPriceDate'].date.start = new Date().toISOString();
   }
-  if (game.newData.price > game.prevData['CurrentPrice'].number) {
-    if (game.prevData['HighestPrice'].number < game.newData.price) {
-      updatedGame['HighestPrice'].number = game.newData.price;
-      updatedGame['HighestPriceDate'].date.start = new Date().toISOString();
-    }
+  //new highest price
+  if (
+    game.newData.price > game.prevData['CurrentPrice'].number &&
+    game.prevData['HighestPrice'].number < game.newData.price
+  ) {
+    updatedGame['HighestPrice'].number = game.newData.price;
+    updatedGame['HighestPriceDate'].date.start = new Date().toISOString();
   }
-  updatedGame['CurrentPrice'].number = game.newData.price; //always update current price
+  //always update current price
+  updatedGame['CurrentPrice'].number = game.newData.price;
   //only upload relevant properties
   for (const property in updatedGame) {
     if (!property.match(/price/gi)) {
