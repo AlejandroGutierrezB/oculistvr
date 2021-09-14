@@ -26,6 +26,7 @@ const gameScraper = async (event, context) => {
     });
 
     page = await browser.newPage();
+
     isDebug &&
       page.on('console', (message) =>
         console.log(
@@ -53,18 +54,19 @@ const gameScraper = async (event, context) => {
       (games) => {
         return games.map((game, isHeadless) => {
           let [title, price] = game.innerText.split('\n');
+          //get discounted prices
           const hasDiscount = price.includes('%');
-          const cleanPriceWhenDiscounted =
-            hasDiscount && isHeadless
-              ? price.split(/[€$]/)[1] //discounted price headless"-29%€24.62€34.98",
-              : hasDiscount && !isHeadless
-              ? price.split(/[€$]/)[0].split('%')[1] //discounted price "-29%24.62€34.98€",
-              : price;
-          //discounted price github"-17%$28.99$34.98",
-          const normalizedPrice = cleanPriceWhenDiscounted
+          if (hasDiscount) {
+            price = isHeadless
+              ? price.split(/[€$]/)[1] //discounted price headless"-29%€24.62€34.98", using $ in gh actions as scrapes US version
+              : price.split(/[€$]/)[0].split('%')[1]; //discounted price "-29%24.62€34.98€",using $ in gh actions as scrapes US version
+          }
+
+          const normalizedPrice = price
             .replace(/[€$]+/g, '')
             .replace(',', '.')
             .trim();
+
           const parsedPrice = Number(
             Math.round(parseFloat(normalizedPrice + 'e2')) + 'e-2'
           );
